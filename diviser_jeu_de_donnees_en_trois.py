@@ -18,18 +18,27 @@ def division(jeu_de_donnees : str, graine : int, entrainement : str, validation 
 
     seed(graine)
 
+    i = 0
     for ligne in fichier_jeu_de_donnees :
         valeur_aleatoire = random() # random() -> x est dans l'intervalle [0, 1).
 
-        fichier = None
-        if(valeur_aleatoire < (1 / 3)) :
-            fichier = fichier_entrainement
-        elif (valeur_aleatoire < (2 / 3)) :
-            fichier = fichier_validation
-        else :
-            fichier = fichier_test
+        if i != 0 :
+            fichier = None
+            if(valeur_aleatoire < (1 / 3)) :
+                fichier = fichier_entrainement
+            elif (valeur_aleatoire < (2 / 3)) :
+                fichier = fichier_validation
+            else :
+                fichier = fichier_test
 
-        fichier.write(ligne)
+            fichier.write(ligne)
+            
+        else : # i == 0 => C'est la premiere ligne avec les noms des colonnes, donc cette ligne sera copiee dans les 3 fichiers
+            fichier_entrainement.write(ligne)
+            fichier_validation.write(ligne)
+            fichier_test.write(ligne)
+
+        i += 1
 
     fichier_jeu_de_donnees.close()
     fichier_entrainement.close()
