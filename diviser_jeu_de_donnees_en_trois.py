@@ -3,7 +3,7 @@ from time import time
 
 def division(jeu_de_donnees : str, graine : int, entrainement : str, validation : str, test : str) -> None :
     """
-    Division des lignes du fichier de jeu_de_donnees en 3 fichiers : entrainement, validation et test, de maniere pseudo-aleatoire.
+    Division des lignes du fichier de jeu de donnees en 3 fichiers : entrainement, validation et test, de maniere pseudo-aleatoire.
     Les fichiers de sortie sont approximativement equilibres (Les chances sont les mêmes pour chacune des lignes d'aller dans l'un des trois fichiers).
     
     Arguments:
@@ -32,7 +32,7 @@ def division(jeu_de_donnees : str, graine : int, entrainement : str, validation 
                 fichier = fichier_test
 
             fichier.write(ligne)
-            
+
         else : # i == 0 => C'est la premiere ligne avec les noms des colonnes, donc cette ligne sera copiee dans les 3 fichiers
             fichier_entrainement.write(ligne)
             fichier_validation.write(ligne)
