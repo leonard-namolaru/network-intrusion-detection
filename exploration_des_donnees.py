@@ -1,3 +1,5 @@
+from pandas import read_csv
+
 def obtenir_noms_colonnes_csv(jeu_de_donnees : str) -> list :
     """
     La fonction recoit le nom d'un fichier csv et renvoie une liste avec les noms des colonnes.
@@ -11,7 +13,7 @@ def obtenir_noms_colonnes_csv(jeu_de_donnees : str) -> list :
     fichier_jeu_de_donnees.close()
     return noms_colonnes
 
-def repartition_noms_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : str, noms_colonnes : list) -> dict :
+def repartition_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : str, noms_colonnes : list) -> dict :
     """
     La fonction recoit le nom d'un fichier csv et une liste avec les noms des colonnes (dans l'ordre dans lequel elles apparaissent dans le fichier). 
     La fonction renvoie un dictionnaire dans lequel les noms des colonnes sont divises selon le type de donnees dans chaque categorie :
@@ -40,8 +42,6 @@ def repartition_noms_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : s
                 nominal = False
                 if int(donnees[i][j]) != 0 and int(donnees[i][j]) != 1 :
                     binaire = False
-                else :
-                  numerique = False  
             else :
                 numerique = False
                 binaire = False
@@ -57,10 +57,37 @@ def repartition_noms_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : s
                     repartition_colonnes['NUMERIQUE'].append( noms_colonnes[j] )
 
                 break # La recherche peut etre arretee pour cette colonne
+
+        if binaire and numerique :
+            repartition_colonnes['BINAIRE'].append( noms_colonnes[j] )
     
     fichier_jeu_de_donnees.close()
     return repartition_colonnes
 
+def impression_statistiques(jeu_de_donnees : str, colonnes_binaires : list, colonnes_nominales : list, colonnes_numeriques : list) -> None :
+    """
+    Impression des donnees statistiques.
+    """
+    donnees = read_csv(jeu_de_donnees)
+    
+    print("Colonnes binaires :")
+    print( donnees[colonnes_binaires].describe().transpose() )
+
+    print("\n")
+
+    print("Colonnes numeriques :")
+    print( donnees[colonnes_numeriques].describe().transpose() )
+
+    print("\n")
+
+    print("Colonnes nominales :")
+    for nom_colonne in colonnes_nominales :
+        print( donnees.groupby([nom_colonne]).size() )
+        print("\n")
+
+
+
 if __name__ == '__main__' :
     noms_colonnes = obtenir_noms_colonnes_csv('entrainement.csv')
-    print( repartition_noms_colonnes_selon_type_donnees_dans_colonne('entrainement.csv', noms_colonnes) )
+    repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne('entrainement.csv', noms_colonnes)
+    impression_statistiques('entrainement.csv', repartition_colonnes['BINAIRE'], repartition_colonnes['NOMINAL'], repartition_colonnes['NUMERIQUE'])
