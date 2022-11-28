@@ -66,28 +66,34 @@ def repartition_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : str, n
 
 def impression_statistiques(jeu_de_donnees : str, colonnes_binaires : list, colonnes_nominales : list, colonnes_numeriques : list) -> None :
     """
-    Impression des donnees statistiques.
+    Impression de donnees statistiques.
     """
-    donnees = read_csv(jeu_de_donnees)
+    data_frame = read_csv(jeu_de_donnees)
+
+    print("Une vue sous forme de tableau de 5 lignes aleatoires :")
+    print( data_frame.sample(5) )
     
     print("Colonnes binaires :")
-    print( donnees[colonnes_binaires].describe().transpose() )
+    print( data_frame[colonnes_binaires].describe().transpose() )
 
     print("\n")
 
     print("Colonnes numeriques :")
-    print( donnees[colonnes_numeriques].describe().transpose() )
+    print( data_frame[colonnes_numeriques].describe().transpose() )
 
     print("\n")
 
     print("Colonnes nominales :")
     for nom_colonne in colonnes_nominales :
-        print( donnees.groupby([nom_colonne]).size() )
+        print( data_frame.groupby([nom_colonne]).size() )
         print("\n")
+
+    print("Le nombre d'elements manquants (NULL) pour chaque colonne :")
+    print( data_frame.isnull().sum(axis=0) )
 
 
 
 if __name__ == '__main__' :
-    noms_colonnes = obtenir_noms_colonnes_csv('entrainement.csv')
-    repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne('entrainement.csv', noms_colonnes)
-    impression_statistiques('entrainement.csv', repartition_colonnes['BINAIRE'], repartition_colonnes['NOMINAL'], repartition_colonnes['NUMERIQUE'])
+    noms_colonnes = obtenir_noms_colonnes_csv('jeu_de_donnees.csv')
+    repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne('jeu_de_donnees.csv', noms_colonnes)
+    impression_statistiques('jeu_de_donnees.csv', repartition_colonnes['BINAIRE'], repartition_colonnes['NOMINAL'], repartition_colonnes['NUMERIQUE'])
