@@ -1,4 +1,5 @@
 from pandas import read_csv
+from sklearn.preprocessing import LabelEncoder
 
 def obtenir_noms_colonnes_csv(jeu_de_donnees : str) -> list :
     """
@@ -12,6 +13,28 @@ def obtenir_noms_colonnes_csv(jeu_de_donnees : str) -> list :
 
     fichier_jeu_de_donnees.close()
     return noms_colonnes
+
+def chaine_caracteres_est_elle_nombre(nombre : str) -> bool :
+    '''
+    '''
+    try:
+        float(nombre)   
+    except ValueError:
+        return False
+
+    return True
+
+def Convertir_chaine_caracteres_int_float(nombre : str) :
+    '''
+    '''
+    resultat = None
+
+    try:
+        resultat = int(nombre)   
+    except ValueError:
+        return float(nombre) 
+        
+    return resultat
 
 def repartition_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : str, noms_colonnes : list) -> dict :
     """
@@ -38,9 +61,9 @@ def repartition_colonnes_selon_type_donnees_dans_colonne(jeu_de_donnees : str, n
         nominal = True
         for i in range(0, len(donnees)) :
 
-            if donnees[i][j].isnumeric() :
+            if chaine_caracteres_est_elle_nombre(donnees[i][j]) :
                 nominal = False
-                if int(donnees[i][j]) != 0 and int(donnees[i][j]) != 1 :
+                if Convertir_chaine_caracteres_int_float(donnees[i][j]) != 0 and Convertir_chaine_caracteres_int_float(donnees[i][j]) != 1 :
                     binaire = False
             else :
                 numerique = False
@@ -83,13 +106,26 @@ def impression_statistiques(jeu_de_donnees : str, colonnes_binaires : list, colo
 
     print("\n")
 
-    print("Colonnes nominales :")
+    print("Colonnes nominales :", colonnes_nominales)
     for nom_colonne in colonnes_nominales :
         print( data_frame.groupby([nom_colonne]).size() )
         print("\n")
 
-    print("Le nombre d'elements manquants (NULL) pour chaque colonne :")
+    print("Le nombre d'elements manquants (NaN , Not a Number) pour chaque colonne :")
     print( data_frame.isnull().sum(axis=0) )
+
+def conversion_colonnes_nominales_en_colonnes_numeriques(jeu_de_donnees : str, noms_colonnes_nominales : list) -> None : 
+    '''
+    '''
+    data_frame = read_csv(jeu_de_donnees)
+    for nom_colonne in noms_colonnes_nominales :
+
+        data_frame[noms_colonnes_nominales] = data_frame[noms_colonnes_nominales].apply( LabelEncoder().fit_transform )
+
+    print("\n")
+    print( data_frame.sample(5) )
+
+
 
 
 
@@ -97,3 +133,5 @@ if __name__ == '__main__' :
     noms_colonnes = obtenir_noms_colonnes_csv('jeu_de_donnees.csv')
     repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne('jeu_de_donnees.csv', noms_colonnes)
     impression_statistiques('jeu_de_donnees.csv', repartition_colonnes['BINAIRE'], repartition_colonnes['NOMINAL'], repartition_colonnes['NUMERIQUE'])
+    conversion_colonnes_nominales_en_colonnes_numeriques('jeu_de_donnees.csv', repartition_colonnes['NOMINAL'])
+    
