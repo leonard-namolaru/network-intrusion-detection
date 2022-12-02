@@ -1,5 +1,7 @@
 from pandas import read_csv
-from sklearn.preprocessing import LabelEncoder
+from seaborn import heatmap
+from matplotlib.pyplot import savefig, figure
+from pretraitement_des_donnees import conversion_colonnes_nominales_en_colonnes_numeriques
 
 def obtenir_noms_colonnes_csv(jeu_de_donnees : str) -> list :
     """
@@ -114,18 +116,16 @@ def impression_statistiques(jeu_de_donnees : str, colonnes_binaires : list, colo
     print("Le nombre d'elements manquants (NaN , Not a Number) pour chaque colonne :")
     print( data_frame.isnull().sum(axis=0) )
 
-def conversion_colonnes_nominales_en_colonnes_numeriques(jeu_de_donnees : str, noms_colonnes_nominales : list) -> None : 
+
+def correlation_classe_autres_colonnes(jeu_de_donnees : str) -> None : 
     '''
     '''
-    data_frame = read_csv(jeu_de_donnees)
-    for nom_colonne in noms_colonnes_nominales :
+    figure(figsize=(20, 20))
+    data_frame = conversion_colonnes_nominales_en_colonnes_numeriques(jeu_de_donnees, ['protocol_type', 'service', 'flag', 'class'])
 
-        data_frame[noms_colonnes_nominales] = data_frame[noms_colonnes_nominales].apply( LabelEncoder().fit_transform )
-
-    print("\n")
-    print( data_frame.sample(5) )
-
-
+    correlation = heatmap(data_frame.iloc[:,:].corr()[['class']].sort_values(by='class', ascending=False), linewidth=.5, cmap='Blues', annot=True, vmin=-1, vmax=1)
+    correlation.set_title('Corrélation entre la classe et les autres colonnes', fontdict={'fontsize':12}, pad=12);
+    savefig("correlation")
 
 
 
@@ -133,5 +133,4 @@ if __name__ == '__main__' :
     noms_colonnes = obtenir_noms_colonnes_csv('jeu_de_donnees.csv')
     repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne('jeu_de_donnees.csv', noms_colonnes)
     impression_statistiques('jeu_de_donnees.csv', repartition_colonnes['BINAIRE'], repartition_colonnes['NOMINAL'], repartition_colonnes['NUMERIQUE'])
-    conversion_colonnes_nominales_en_colonnes_numeriques('jeu_de_donnees.csv', repartition_colonnes['NOMINAL'])
-    
+    correlation_classe_autres_colonnes('entrainement.csv')
