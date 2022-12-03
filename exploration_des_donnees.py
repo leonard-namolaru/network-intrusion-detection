@@ -1,6 +1,6 @@
 from pandas import read_csv
 from seaborn import heatmap
-from matplotlib.pyplot import savefig, figure
+from matplotlib.pyplot import savefig, figure # python3 -m pip install -U matplotlib
 
 def obtenir_noms_colonnes_csv(jeu_de_donnees : str) -> list :
     """
