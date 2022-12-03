@@ -1,11 +1,10 @@
-from pandas import read_csv, get_dummies
+from pandas import DataFrame, read_csv, get_dummies
 from sklearn.preprocessing import LabelEncoder
+from exploration_des_donnees import obtenir_noms_colonnes_csv, repartition_colonnes_selon_type_donnees_dans_colonne
 
-def conversion_colonnes_nominales_en_colonnes_numeriques(jeu_de_donnees : str, noms_colonnes_nominales : list) -> None : 
+def conversion_colonnes_nominales_en_colonnes_binaires(data_frame : DataFrame, noms_colonnes_nominales : list) -> DataFrame : 
     '''
     '''
-    data_frame = read_csv(jeu_de_donnees)
-
     for nom_colonne in noms_colonnes_nominales :
         if  len( data_frame.groupby([nom_colonne]).size() ) == 2:
             data_frame[[nom_colonne]] = data_frame[[nom_colonne]].apply( LabelEncoder().fit_transform )
@@ -14,6 +13,38 @@ def conversion_colonnes_nominales_en_colonnes_numeriques(jeu_de_donnees : str, n
     
     return data_frame
 
+def suppression_colonnes_inutiles(data_frame : DataFrame, noms_colonnes : list) -> DataFrame : 
+    '''
+    '''
+    for nom_colonne in noms_colonnes :
+        if  len( data_frame.groupby([nom_colonne]).size() ) == 1:
+                data_frame.drop(nom_colonne, axis = 1, inplace = True)
+    
+    return data_frame
+
+def normalisation_min_max(data_frame : DataFrame, noms_colonnes : list) -> DataFrame : 
+    '''
+    '''
+    for nom_colonne in noms_colonnes :
+        max = data_frame[nom_colonne].max()
+        min = data_frame[nom_colonne].min()
+        data_frame[[nom_colonne]] = data_frame[[nom_colonne]].apply( lambda x : (x - min) / (max - min) )
+    
+    return data_frame
+
 
 if __name__ == '__main__' :
-    print( conversion_colonnes_nominales_en_colonnes_numeriques('jeu_de_donnees.csv', ['protocol_type', 'service', 'flag', 'class']).sample(5) )
+    fichier_csv = 'jeu_de_donnees.csv'
+    data_frame = read_csv( fichier_csv )
+
+    noms_colonnes = obtenir_noms_colonnes_csv( fichier_csv )
+    repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne(fichier_csv, noms_colonnes)
+
+    data_frame = conversion_colonnes_nominales_en_colonnes_binaires(data_frame, repartition_colonnes['NOMINAL'])
+    print( data_frame.head() )
+
+    data_frame = suppression_colonnes_inutiles(data_frame, repartition_colonnes['BINAIRE'])
+    print( data_frame.head() ) 
+
+    data_frame = normalisation_min_max(data_frame, repartition_colonnes['NUMERIQUE'])
+    print( data_frame.head() )
