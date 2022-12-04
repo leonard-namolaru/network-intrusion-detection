@@ -1,5 +1,5 @@
 from pandas import DataFrame, read_csv, get_dummies
-from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
+from sklearn.preprocessing import LabelEncoder
 from exploration_des_donnees import obtenir_noms_colonnes_csv, repartition_colonnes_selon_type_donnees_dans_colonne
 
 def conversion_colonnes_nominales_en_colonnes_binaires(data_frame : DataFrame, noms_colonnes_nominales : list) -> DataFrame : 
@@ -32,15 +32,6 @@ def normalisation_min_max(data_frame : DataFrame, noms_colonnes : list) -> DataF
     
     return data_frame
 
-def discretisation(data_frame : DataFrame, noms_colonnes : list) -> DataFrame :
-    discretizer = KBinsDiscretizer(n_bins=2, encode='ordinal', strategy='uniform')
-    discretizer.fit( data_frame[noms_colonnes] )
-    resultat = discretizer.transform( data_frame[noms_colonnes] )
-    data_frame[noms_colonnes] = DataFrame(resultat)  
-
-    return data_frame
-
-
 if __name__ == '__main__' :
     fichier_csv = 'jeu_de_donnees.csv'
     data_frame = read_csv( fichier_csv )
@@ -59,11 +50,6 @@ if __name__ == '__main__' :
     print( data_frame.head() )
     print( data_frame.describe().transpose() )
 
-    data_frame = discretisation(data_frame, repartition_colonnes['NUMERIQUE'])
-    print( data_frame.head() )
-
     data_frame.to_csv('jeu_de_donnees_apres_pretraitement.csv', index=False)
-    print( data_frame.describe().transpose() )
-
 
 
