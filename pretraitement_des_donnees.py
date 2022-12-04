@@ -1,5 +1,5 @@
 from pandas import DataFrame, read_csv, get_dummies
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from exploration_des_donnees import obtenir_noms_colonnes_csv, repartition_colonnes_selon_type_donnees_dans_colonne
 
 def conversion_colonnes_nominales_en_colonnes_binaires(data_frame : DataFrame, noms_colonnes_nominales : list) -> DataFrame : 
@@ -32,6 +32,14 @@ def normalisation_min_max(data_frame : DataFrame, noms_colonnes : list) -> DataF
     
     return data_frame
 
+def normalisation(data_frame : DataFrame, noms_colonnes : list) -> DataFrame : 
+    '''
+    '''
+    standard_scaler = StandardScaler().fit( data_frame[noms_colonnes] )   
+    data_frame[noms_colonnes] = standard_scaler.transform( data_frame[noms_colonnes] ) 
+    return data_frame
+
+
 if __name__ == '__main__' :
     fichier_csv = 'jeu_de_donnees.csv'
     data_frame = read_csv( fichier_csv )
@@ -46,7 +54,8 @@ if __name__ == '__main__' :
     print( data_frame.head() )
     print( data_frame.describe().transpose() )
 
-    data_frame = normalisation_min_max(data_frame, repartition_colonnes['NUMERIQUE'])
+    data_frame = normalisation(data_frame, repartition_colonnes['NUMERIQUE'])
+    
     print( data_frame.head() )
     print( data_frame.describe().transpose() )
 
