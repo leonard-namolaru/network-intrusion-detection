@@ -155,26 +155,24 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
     return (svm_score_entrainement, svm_score_validation, classification_report(y_entrainement, y_pred))
 
 
+def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> None :
+    params = {'C': [0.1, 1, 10, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs']}
 
-# Logistic Regression (going for a different approach this time, not the same optuna study one)
-print("******Logistic Regression******\n")
+    lg_model = LogisticRegression()
 
-params = {'C': [0.1, 1, 10, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs']}
+    # create logistic regression model with cross-validation
+    grid = GridSearchCV(lg_model, params, cv=4)
 
-lg_model = LogisticRegression()
-# create logistic regression model with cross-validation
-grid = GridSearchCV(lg_model, params, cv=4)
+    # train the model on the training data
+    grid.fit(x_entrainement, y_entrainement)
 
-# train the model on the training data
-grid.fit(x_train, y_train)
+    lg_model = grid.best_estimator_
+    # print the best params
+    # print(model.best_params_)
 
-lg_model = grid.best_estimator_
-# print the best params
-# print(model.best_params_)
-
-# make predictions on the testing data then evaluate performance
-y_pred = lg_model.predict(x_validate)
-# print(classification_report(y_validate, y_pred))
+    # make predictions on the testing data then evaluate performance
+    y_pred = lg_model.predict(x_validation)
+    # print(classification_report(y_validate, y_pred))
 
 
 if __name__ == '__main__' :
@@ -185,5 +183,7 @@ if __name__ == '__main__' :
     gnb_score_entrainement, gnb_score_validation, gnb_rapport = naive_bayes(x_entrainement, y_entrainement, x_validation, y_validation)
     voisins_score_entrainement, voisins_score_validation, voisins_rapport = k_plus_proches_voisins(x_entrainement, y_entrainement, x_validation, y_validation)
 
-    arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, arbre_de_decision_rapport = (x_entrainement, y_entrainement, x_validation, y_validation)
+    arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, arbre_de_decision_rapport = arbre_de_decision(x_entrainement, y_entrainement, x_validation, y_validation)
+    random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
 
+    svm_score_entrainement, svm_score_validation, svm_rapport = svm(x_entrainement, y_entrainement, x_validation, y_validation)
