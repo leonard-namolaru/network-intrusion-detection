@@ -160,17 +160,16 @@ def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.Dat
 
     lg_model = LogisticRegression()
 
-    # create logistic regression model with cross-validation
+    # Création d'un modèle de régression logistique avec validation croisée
     grid = GridSearchCV(lg_model, params, cv=4)
 
-    # train the model on the training data
+    # Entraîner le modèle sur les données d'entraînement
     grid.fit(x_entrainement, y_entrainement)
 
     lg_model = grid.best_estimator_
-    # print the best params
     # print(model.best_params_)
 
-    # make predictions on the testing data then evaluate performance
+    # Faire des prédictions sur les données de test puis évaluer les performances
     y_pred = lg_model.predict(x_validation)
     # print(classification_report(y_validate, y_pred))
 
@@ -187,3 +186,4 @@ if __name__ == '__main__' :
     random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
 
     svm_score_entrainement, svm_score_validation, svm_rapport = svm(x_entrainement, y_entrainement, x_validation, y_validation)
+    regression_logistique(x_entrainement, y_entrainement, x_validation, y_validation)
