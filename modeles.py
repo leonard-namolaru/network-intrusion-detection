@@ -160,16 +160,16 @@ def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.Dat
 
     lg_model = LogisticRegression()
 
-    # Création d'un modèle de régression logistique avec validation croisée
+    # Creation d'un modele de regression logistique avec validation croisee
     grid = GridSearchCV(lg_model, params, cv=4)
 
-    # Entraîner le modèle sur les données d'entraînement
+    # Entrainer le modele sur les donnees d'entrainement
     grid.fit(x_entrainement, y_entrainement)
 
     lg_model = grid.best_estimator_
     # print(model.best_params_)
 
-    # Faire des prédictions sur les données de test puis évaluer les performances
+    # Faire des predictions sur les donnees de validation puis evaluer les performances
     y_pred = lg_model.predict(x_validation)
     # print(classification_report(y_validate, y_pred))
 
@@ -180,10 +180,17 @@ if __name__ == '__main__' :
     x_test, y_test = creation_data_frame_division_x_y("test.csv")
 
     gnb_score_entrainement, gnb_score_validation, gnb_rapport = naive_bayes(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********NAIVE BAYES********** \n\n Score D'entrainement {gnb_score_entrainement} || Score de validation {gnb_score_validation} \n")
+
     voisins_score_entrainement, voisins_score_validation, voisins_rapport = k_plus_proches_voisins(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********K plus proches voisins********** \n\n Score D'entrainement {voisins_score_entrainement} || Score de validation {voisins_score_validation} \n")
 
     arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, arbre_de_decision_rapport = arbre_de_decision(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********Arbre de decision********** \n\n Score D'entrainement {arbre_de_decision_score_entrainement} || Score de validation {arbre_de_decision_score_validation} \n")    
+    
     random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
 
     svm_score_entrainement, svm_score_validation, svm_rapport = svm(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********SVM********** \n\n Score D'entrainement {svm_score_entrainement} || Score de validation {svm_score_validation} \n")    
+
     regression_logistique(x_entrainement, y_entrainement, x_validation, y_validation)
