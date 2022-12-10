@@ -134,21 +134,25 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
         classificateur.fit(x_entrainement, y_entrainement)
         return classificateur.score(x_validation, y_validation)
 
-    # run the study
-    svm_study = optuna.create_study(direction='maximize')
-    svm_study.optimize(svm_score, n_trials=8)
-    # optuna.visualization.plot_optimization_history(svm_study).show()
+    # Executer l'etude
+    etude = optuna.create_study(direction='maximize')
+    etude.optimize(svm_score, n_trials=8)
 
-    # make the model with best params
-    svm_model = SVC(kernel=svm_study.best_trial.params['kernel'])
-    svm_model.fit(x_entrainement, y_entrainement)
+    # optuna.visualization.plot_optimization_history(etude).show()
+    # optuna.visualization.plot_parallel_coordinate(etude).show()
 
-    # model score
-    y_pred = svm_model.predict(x_entrainement)
+    # Creer le modele avec les meilleurs parametres
+    modele = SVC(kernel = etude.best_trial.params['kernel'])
+    modele.fit(x_entrainement, y_entrainement)
+
+    # Score du modele
+    y_pred = modele.predict(x_entrainement)
     print(classification_report(y_entrainement, y_pred))
 
-    svm_train_score = svm_model.score(x_entrainement, y_entrainement)
-    svm_validate_score = svm_model.score(x_validation, y_validation)
+    svm_score_entrainement = modele.score(x_entrainement, y_entrainement)
+    svm_score_validation = modele.score(x_validation, y_validation)
+
+    return (svm_score_entrainement, svm_score_validation, classification_report(y_entrainement, y_pred))
 
 
 
