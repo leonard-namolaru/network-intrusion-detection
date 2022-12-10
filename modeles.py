@@ -1,3 +1,4 @@
+# pip install plotly
 import pandas as pd
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -57,8 +58,8 @@ def k_plus_proches_voisins(x_entrainement : pd.DataFrame, y_entrainement : pd.Da
 
     # plotting hyperparams effects on the score
     plot = optuna.visualization.plot_parallel_coordinate(etude)
-    #plot.show()
-    plot.savefig("KNN.png")
+    plot.show()
+    # plot.savefig("KNN.png")
 
     # Creation du modele avec les parametres du meilleur essai
     knn_model = KNeighborsClassifier(n_neighbors=etude.best_trial.params['knn'])
@@ -88,8 +89,8 @@ def arbre_de_decision(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFra
     etude.optimize(arbre_de_decision_score, n_trials=32)
 
     plot = optuna.visualization.plot_parallel_coordinate(etude)
-    #plot.show()
-    plot.savefig("arbres_decision.png")
+    plot.show()
+    #plot.savefig("arbres_decision.png")
 
     # Creer le modele avec les meilleurs parametres
     dt_modele = DecisionTreeClassifier(max_depth = etude.best_trial.params['features'], max_features = etude.best_trial.params['depth'])
@@ -144,7 +145,7 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
 
     plot = optuna.visualization.plot_parallel_coordinate(etude).show()
     #plot.show()
-    plot.savefig("svm.png")
+    #plot.savefig("svm.png")
 
     # Creer le modele avec les meilleurs parametres
     modele = SVC(kernel = etude.best_trial.params['kernel'])
@@ -188,24 +189,30 @@ def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.Dat
     return (regression_logistique_score_entrainement, regression_logistique_score_validation, classification_report(y_entrainement, y_pred))
 
 if __name__ == '__main__' :
-    x_entrainement, y_entrainement = creation_data_frame_division_x_y("entrainement_apres_selection_colonnes.csv")
+    x_entrainement, y_entrainement = creation_data_frame_division_x_y("entrainement.csv")
     x_validation, y_validation = creation_data_frame_division_x_y("validation.csv")
     x_test, y_test = creation_data_frame_division_x_y("test.csv")
 
     gnb_score_entrainement, gnb_score_validation, gnb_rapport = naive_bayes(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********NAIVE BAYES********** \n\n Score D'entrainement {gnb_score_entrainement} || Score de validation {gnb_score_validation} \n")
+    print(gnb_rapport)
 
     voisins_score_entrainement, voisins_score_validation, voisins_rapport = k_plus_proches_voisins(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********K plus proches voisins********** \n\n Score D'entrainement {voisins_score_entrainement} || Score de validation {voisins_score_validation} \n")
+    print(voisins_rapport)
 
     arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, arbre_de_decision_rapport = arbre_de_decision(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********Arbre de decision********** \n\n Score D'entrainement {arbre_de_decision_score_entrainement} || Score de validation {arbre_de_decision_score_validation} \n")    
-    
+    print(arbre_de_decision_rapport)
+
     random_forest_score_entrainement, random_forest_score_validation, random_forest_rapport = random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********Random forest********** \n\n Score D'entrainement {random_forest_score_entrainement} || Score de validation {random_forest_score_validation} \n")    
+    print(random_forest_rapport)
 
     svm_score_entrainement, svm_score_validation, svm_rapport = svm(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********SVM********** \n\n Score D'entrainement {svm_score_entrainement} || Score de validation {svm_score_validation} \n")    
+    print(svm_rapport)
 
     regression_logistique_score_entrainement, regression_logistique_score_validation, regression_logistique_rapport = regression_logistique(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********Regression logistique********** \n\n Score D'entrainement {svm_score_entrainement} || Score de validation {svm_score_validation} \n")    
+    print(regression_logistique_rapport)

@@ -80,7 +80,7 @@ if __name__ == '__main__' :
     noms_colonnes = obtenir_noms_colonnes_csv( fichier_csv )
     repartition_colonnes = repartition_colonnes_selon_type_donnees_dans_colonne(fichier_csv, noms_colonnes)
 
-    fichier_csv = 'entrainement.csv'
+    fichier_csv = 'jeu_de_donnees_apres_pretraitement.csv'
     data_frame = read_csv( fichier_csv )
 
     print( data_frame.head() )
@@ -88,8 +88,5 @@ if __name__ == '__main__' :
     print( data_frame.head() )
     print( data_frame.columns )
 
-    #data_frame = discretisation(data_frame, repartition_colonnes['NUMERIQUE'])
-
-    data_frame.to_csv('entrainement_apres_selection_colonnes.csv', index=False)
-    correlation_classe_autres_colonnes('entrainement_apres_selection_colonnes.csv')
-
+    data_frame.to_csv('jeu_de_donnees_apres_pretraitement_selection_colonnes.csv', index=False)
+    correlation_classe_autres_colonnes('jeu_de_donnees_apres_pretraitement_selection_colonnes.csv')
