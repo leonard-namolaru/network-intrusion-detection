@@ -70,7 +70,9 @@ def knn():
     # running 16 trials as i am unsure how to find an optimal number
     knn_study.optimize(KNN_score, n_trials=20)
     # plotting hyperparams effects on the score
-    optuna.visualization.plot_parallel_coordinate(knn_study).show()
+    plot = optuna.visualization.plot_parallel_coordinate(knn_study)
+    plot.show()
+    plot.savefig("KNN.png")
 
     # making the knn model with the parameters from the best trial
     knn_model = KNeighborsClassifier(
@@ -98,7 +100,9 @@ def decision_trees():
     # run the study
     dt_study = optuna.create_study(direction='maximize')
     dt_study.optimize(dt_score, n_trials=32)
-    optuna.visualization.plot_parallel_coordinate(dt_study).show()
+    plot = optuna.visualization.plot_parallel_coordinate(dt_study)
+    plot.show()
+    plot.savefig("arbres_decision.png")
 
     # make the model with best params
     dt_model = DecisionTreeClassifier(
@@ -126,6 +130,7 @@ def random_forests():
     df = pd.DataFrame(gs.cv_results_)
     sns.scatterplot(data=df, x='param_n_estimators', y='mean_test_score', style='param_max_depth', hue='param_min_samples_leaf')
     plt.show()
+    plt.savefig("forets_aleatoires.png")
 
     rfc_model = gs.best_estimator_
     # model score
@@ -146,8 +151,9 @@ def svm():
     # run the study
     svm_study = optuna.create_study(direction='maximize')
     svm_study.optimize(svm_score, n_trials=5)
-    optuna.visualization.plot_parallel_coordinate(svm_study).show()
-
+    plot = optuna.visualization.plot_parallel_coordinate(svm_study).show()
+    plot.show()
+    plot.savefig("svm.png")
     # make the model with best params
     svm_model = SVC(kernel=svm_study.best_trial.params['kernel'])
     svm_model.fit(x_train, y_train)
@@ -174,10 +180,8 @@ def lg():
 
     sns.scatterplot(data=df, x='param_C', y='mean_test_score', style='param_penalty', hue='param_solver')
     plt.show()
-
+    plt.savefig("reg_log.png")
     lg_model = grid.best_estimator_
-    # print the best params
-    # print(model.best_params_)
 
     # make predictions on the testing data then evaluate performance
     print(f"score entrainement: {lg_model.score(x_train, y_train)} \n score validation: {lg_model.score(x_validate, y_validate)}")
