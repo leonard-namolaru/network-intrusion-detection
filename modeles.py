@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -9,10 +7,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
-from sklearn import tree
 import optuna
 import optuna.visualization
 import matplotlib.pyplot as plt
+import seaborn as sns
+
 from warnings import simplefilter
 simplefilter("ignore", category=Warning)
 
@@ -25,12 +24,6 @@ def creation_data_frame_division_x_y(fichier_csv : str) -> tuple :
     y = donnees['class']
 
     return (x,y)
-
-# standardize/scale data (convert it to z-scores), might be optional
-#scaler = StandardScaler()
-#x_train = scaler.fit_transform(x_train)
-#validation = scaler.fit_transform(validation)
-#test = scaler.fit_transform(test)
 
 def naive_bayes(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> tuple : 
     gnb_modele = GaussianNB()
@@ -62,6 +55,11 @@ def k_plus_proches_voisins(x_entrainement : pd.DataFrame, y_entrainement : pd.Da
     # Executer 16 essais
     etude.optimize(k_plus_proches_voisins_score, n_trials=20)
 
+    # plotting hyperparams effects on the score
+    plot = optuna.visualization.plot_parallel_coordinate(etude)
+    #plot.show()
+    plot.savefig("KNN.png")
+
     # Creation du modele avec les parametres du meilleur essai
     knn_model = KNeighborsClassifier(n_neighbors=etude.best_trial.params['knn'])
     knn_model.fit(x_entrainement, y_entrainement)
@@ -77,7 +75,7 @@ def k_plus_proches_voisins(x_entrainement : pd.DataFrame, y_entrainement : pd.Da
 def arbre_de_decision(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> tuple : 
     def arbre_de_decision_score(trial):
         max_profondeur = trial.suggest_int('depth', 2, 16)
-        max_colonnes = trial.suggest_int('features', 2, 52)
+        max_colonnes = trial.suggest_int('features', 2, 51)
 
         classificateur = DecisionTreeClassifier(max_depth = max_profondeur, max_features = max_colonnes)
         classificateur.fit(x_entrainement, y_entrainement)
@@ -87,40 +85,46 @@ def arbre_de_decision(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFra
 
     # Executer l'etude
     etude = optuna.create_study(direction='maximize')
-    etude.optimize(arbre_de_decision_score, n_trials=16)
-    optuna.visualization.plot_parallel_coordinate(etude).show()
+    etude.optimize(arbre_de_decision_score, n_trials=32)
+
+    plot = optuna.visualization.plot_parallel_coordinate(etude)
+    #plot.show()
+    plot.savefig("arbres_decision.png")
 
     # Creer le modele avec les meilleurs parametres
-    dt_model = DecisionTreeClassifier(max_depth = etude.best_trial.params['features'], max_features = etude.best_trial.params['depth'])
-    dt_model.fit(x_entrainement, y_entrainement)
+    dt_modele = DecisionTreeClassifier(max_depth = etude.best_trial.params['features'], max_features = etude.best_trial.params['depth'])
+    dt_modele.fit(x_entrainement, y_entrainement)
 
     # Score du modele
-    y_pred = dt_model.predict(x_validation)
+    y_pred = dt_modele.predict(x_validation)
 
-    arbre_de_decision_score_entrainement = dt_model.score(x_entrainement, y_entrainement)
-    arbre_de_decision_score_validation = dt_model.score(x_validation, y_validation)
-
-    fig = plt.figure(figsize= (50,30))
-    tree.plot_tree(dt_model, filled=True)
-    # plt.show()
-    plt.savefig("arbre_de_decision")
+    arbre_de_decision_score_entrainement = dt_modele.score(x_entrainement, y_entrainement)
+    arbre_de_decision_score_validation = dt_modele.score(x_validation, y_validation)
 
     return (arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, classification_report(y_validation, y_pred))
 
-
 def random_forest(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> None :
-    rfc_model = RandomForestClassifier(random_state = 0)
-    params = {'n_estimators': [100, 200, 500], 'max_depth': [3, 5, 10]}
+    rfc_modele = RandomForestClassifier(random_state = 0)
+    params = {'n_estimators': [100, 200, 500], 'max_depth': [3, 5, 10], "min_samples_leaf": [1, 2, 3]}
 
     # Utilisation de GridSearchCV pour trouver le meilleur ensemble d'hyperparametres
-    gs = GridSearchCV(rfc_model, params, cv=4, scoring='f1')
-    gs.fit(x_entrainement, y_entrainement)
+    gs = GridSearchCV(rfc_modele, params, cv=4, scoring='f1')
+    gs.fit(pd.concat([x_entrainement, x_validation]), pd.concat([y_entrainement, y_validation]))
 
-    # Entrainement
-    rfc_model.fit(x_entrainement, y_entrainement)
+    df = pd.DataFrame(gs.cv_results_)
+    sns.scatterplot(data=df, x='param_n_estimators', y='mean_test_score', style='param_max_depth', hue='param_min_samples_leaf')
+    plt.show()
+    plt.savefig("forets_aleatoires.png")
 
-    y_pred = rfc_model.predict(x_validation)
-    print( classification_report(y_validation, y_pred) )
+    rfc_modele = gs.best_estimator_
+
+    # Score du modele
+    y_pred = rfc_modele.predict(x_validation)
+
+    random_forest_score_entrainement = rfc_modele.score(x_entrainement, y_entrainement)
+    random_forest_score_validation = rfc_modele.score(x_validation, y_validation)
+
+    return (random_forest_score_entrainement, random_forest_score_validation, classification_report(y_validation, y_pred))
 
 
 def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> tuple :
@@ -136,10 +140,11 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
 
     # Executer l'etude
     etude = optuna.create_study(direction='maximize')
-    etude.optimize(svm_score, n_trials=8)
+    etude.optimize(svm_score, n_trials = 5)
 
-    # optuna.visualization.plot_optimization_history(etude).show()
-    # optuna.visualization.plot_parallel_coordinate(etude).show()
+    plot = optuna.visualization.plot_parallel_coordinate(etude).show()
+    #plot.show()
+    plot.savefig("svm.png")
 
     # Creer le modele avec les meilleurs parametres
     modele = SVC(kernel = etude.best_trial.params['kernel'])
@@ -147,7 +152,6 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
 
     # Score du modele
     y_pred = modele.predict(x_entrainement)
-    print(classification_report(y_entrainement, y_pred))
 
     svm_score_entrainement = modele.score(x_entrainement, y_entrainement)
     svm_score_validation = modele.score(x_validation, y_validation)
@@ -156,23 +160,32 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
 
 
 def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> None :
-    params = {'C': [0.1, 1, 10, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs']}
+    params = {'C': [0.1, 1, 5, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs']}
 
-    lg_model = LogisticRegression()
+    modele_regression_logistique = LogisticRegression()
 
     # Creation d'un modele de regression logistique avec validation croisee
-    grid = GridSearchCV(lg_model, params, cv=4)
+    grid = GridSearchCV(modele_regression_logistique, params, cv=4)
 
-    # Entrainer le modele sur les donnees d'entrainement
-    grid.fit(x_entrainement, y_entrainement)
+    # train and optimize the model
+    grid.fit(pd.concat([x_entrainement, x_validation]), pd.concat([y_entrainement, y_validation]))
 
-    lg_model = grid.best_estimator_
-    # print(model.best_params_)
+    # plot with scatterplot
+    df = pd.DataFrame(grid.cv_results_)
+
+    sns.scatterplot(data=df, x='param_C', y='mean_test_score', style='param_penalty', hue='param_solver')
+    #plt.show()
+    plt.savefig("reg_log.png")
+
+    modele_regression_logistique = grid.best_estimator_
 
     # Faire des predictions sur les donnees de validation puis evaluer les performances
-    y_pred = lg_model.predict(x_validation)
-    # print(classification_report(y_validate, y_pred))
+    y_pred = modele_regression_logistique.predict(x_entrainement)
 
+    regression_logistique_score_entrainement = modele_regression_logistique.score(x_entrainement, y_entrainement)
+    regression_logistique_score_validation = modele_regression_logistique.score(x_validation, y_validation)
+
+    return (regression_logistique_score_entrainement, regression_logistique_score_validation, classification_report(y_entrainement, y_pred))
 
 if __name__ == '__main__' :
     x_entrainement, y_entrainement = creation_data_frame_division_x_y("entrainement_apres_selection_colonnes.csv")
@@ -188,9 +201,11 @@ if __name__ == '__main__' :
     arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, arbre_de_decision_rapport = arbre_de_decision(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********Arbre de decision********** \n\n Score D'entrainement {arbre_de_decision_score_entrainement} || Score de validation {arbre_de_decision_score_validation} \n")    
     
-    random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
+    random_forest_score_entrainement, random_forest_score_validation, random_forest_rapport = random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********Random forest********** \n\n Score D'entrainement {random_forest_score_entrainement} || Score de validation {random_forest_score_validation} \n")    
 
     svm_score_entrainement, svm_score_validation, svm_rapport = svm(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********SVM********** \n\n Score D'entrainement {svm_score_entrainement} || Score de validation {svm_score_validation} \n")    
 
-    regression_logistique(x_entrainement, y_entrainement, x_validation, y_validation)
+    regression_logistique_score_entrainement, regression_logistique_score_validation, regression_logistique_rapport = regression_logistique(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********Regression logistique********** \n\n Score D'entrainement {svm_score_entrainement} || Score de validation {svm_score_validation} \n")    
