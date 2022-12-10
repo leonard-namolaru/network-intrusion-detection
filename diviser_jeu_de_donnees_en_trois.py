@@ -46,4 +46,4 @@ def division(jeu_de_donnees : str, graine : int, entrainement : str, validation 
     fichier_test.close()
 
 if __name__ == '__main__' :
-    division('jeu_de_donnees_apres_pretraitement.csv', time(), 'entrainement.csv', 'validation.csv', 'test.csv')
+    division('selection_colonnes.csv', time(), 'entrainement.csv', 'validation.csv', 'test.csv')
