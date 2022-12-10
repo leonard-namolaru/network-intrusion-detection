@@ -49,14 +49,14 @@ def k_plus_proches_voisins(x_entrainement : pd.DataFrame, y_entrainement : pd.Da
         return classificateur.score(x_validation, y_validation)
     
     # Par defaut, Optuna affiche des messages de log
-    optuna.logging.set_verbosity(optuna.logging.WARNING) # Cesser d'afficher chaque résultat d'essai
+    optuna.logging.set_verbosity(optuna.logging.WARNING) # Cesser d'afficher chaque resultat d'essai
     
     etude = optuna.create_study(direction='maximize')
 
-    # Executer 16 essais
+    # Executer 20 essais
     etude.optimize(k_plus_proches_voisins_score, n_trials=20)
 
-    # plotting hyperparams effects on the score
+    # Tracer les effets des hyperparams sur le score
     plot = optuna.visualization.plot_parallel_coordinate(etude)
     plot.show()
     # plot.savefig("KNN.png")
@@ -104,7 +104,7 @@ def arbre_de_decision(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFra
 
     return (arbre_de_decision_score_entrainement, arbre_de_decision_score_validation, classification_report(y_validation, y_pred))
 
-def random_forest(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> None :
+def forets_aleatoires(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> tuple :
     rfc_modele = RandomForestClassifier(random_state = 0)
     params = {'n_estimators': [100, 200, 500], 'max_depth': [3, 5, 10], "min_samples_leaf": [1, 2, 3]}
 
@@ -160,7 +160,7 @@ def svm(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validati
     return (svm_score_entrainement, svm_score_validation, classification_report(y_entrainement, y_pred))
 
 
-def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> None :
+def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.DataFrame, x_validation : pd.DataFrame, y_validation : pd.DataFrame) -> tuple :
     params = {'C': [0.1, 1, 5, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs']}
 
     modele_regression_logistique = LogisticRegression()
@@ -168,12 +168,10 @@ def regression_logistique(x_entrainement : pd.DataFrame, y_entrainement : pd.Dat
     # Creation d'un modele de regression logistique avec validation croisee
     grid = GridSearchCV(modele_regression_logistique, params, cv=4)
 
-    # train and optimize the model
+    # Entrainer et optimiser le modele
     grid.fit(pd.concat([x_entrainement, x_validation]), pd.concat([y_entrainement, y_validation]))
 
-    # plot with scatterplot
     df = pd.DataFrame(grid.cv_results_)
-
     sns.scatterplot(data=df, x='param_C', y='mean_test_score', style='param_penalty', hue='param_solver')
     #plt.show()
     plt.savefig("reg_log.png")
@@ -205,8 +203,8 @@ if __name__ == '__main__' :
     print(f"**********Arbre de decision********** \n\n Score D'entrainement {arbre_de_decision_score_entrainement} || Score de validation {arbre_de_decision_score_validation} \n")    
     print(arbre_de_decision_rapport)
 
-    random_forest_score_entrainement, random_forest_score_validation, random_forest_rapport = random_forest(x_entrainement, y_entrainement, x_validation, y_validation)
-    print(f"**********Random forest********** \n\n Score D'entrainement {random_forest_score_entrainement} || Score de validation {random_forest_score_validation} \n")    
+    random_forest_score_entrainement, random_forest_score_validation, random_forest_rapport = forets_aleatoires(x_entrainement, y_entrainement, x_validation, y_validation)
+    print(f"**********Forets aleatoires********** \n\n Score D'entrainement {random_forest_score_entrainement} || Score de validation {random_forest_score_validation} \n")    
     print(random_forest_rapport)
 
     svm_score_entrainement, svm_score_validation, svm_rapport = svm(x_entrainement, y_entrainement, x_validation, y_validation)
