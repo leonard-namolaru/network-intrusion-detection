@@ -214,3 +214,30 @@ if __name__ == '__main__' :
     regression_logistique_score_entrainement, regression_logistique_score_validation, regression_logistique_rapport = regression_logistique(x_entrainement, y_entrainement, x_validation, y_validation)
     print(f"**********Regression logistique********** \n\n Score D'entrainement {svm_score_entrainement} || Score de validation {svm_score_validation} \n")    
     print(regression_logistique_rapport)
+
+    print("******************************* TEST ************************************")
+
+    gnb_score_entrainement, gnb_score_test, gnb_rapport = naive_bayes(x_entrainement, y_entrainement, x_test, y_test)
+    print(f"**********NAIVE BAYES********** \n\n Score D'entrainement {gnb_score_entrainement} || Score de test {gnb_score_test} \n")
+    print(gnb_rapport)
+
+    voisins_score_entrainement, voisins_score_test, voisins_rapport = k_plus_proches_voisins(x_entrainement, y_entrainement, x_test, y_test)
+    print(f"**********K plus proches voisins********** \n\n Score D'entrainement {voisins_score_entrainement} || Score de test {voisins_score_test} \n")
+    print(voisins_rapport)
+
+    arbre_de_decision_score_entrainement, arbre_de_decision_score_test, arbre_de_decision_rapport = arbre_de_decision(x_entrainement, y_entrainement, x_test, y_test)
+    print(f"**********Arbre de decision********** \n\n Score D'entrainement {arbre_de_decision_score_entrainement} || Score de test {arbre_de_decision_score_test} \n")    
+    print(arbre_de_decision_rapport)
+
+    random_forest_score_entrainement, random_forest_score_test, random_forest_rapport = forets_aleatoires(x_entrainement, y_entrainement, x_test, y_test)
+    print(f"**********Forets aleatoires********** \n\n Score D'entrainement {random_forest_score_entrainement} || Score de test {random_forest_score_test} \n")    
+    print(random_forest_rapport)
+
+    svm_score_entrainement, svm_score_test, svm_rapport = svm(x_entrainement, y_entrainement, x_test, y_test)
+    print(f"**********SVM********** \n\n Score D'entrainement {svm_score_entrainement} || Score de test {svm_score_test} \n")    
+    print(svm_rapport)
+
+    regression_logistique_score_entrainement, regression_logistique_score_test, regression_logistique_rapport = regression_logistique(x_entrainement, y_entrainement, x_test, y_test)
+    print(f"**********Regression logistique********** \n\n Score D'entrainement {svm_score_entrainement} || Score de test {svm_score_test} \n")    
+    print(regression_logistique_rapport)
+
